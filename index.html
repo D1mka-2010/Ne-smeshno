@@ -125,6 +125,11 @@
             align-items: center;
             justify-content: center;
         }
+        
+        .loading {
+            font-style: italic;
+            color: #757575;
+        }
     </style>
 </head>
 <body>
@@ -143,12 +148,12 @@
         </div>
         
         <div class="joke-display" id="jokeText">
-            Нажмите кнопку ниже, чтобы услышать ужасный анекдот...
+            <span class="loading">Загружаю ужасный анекдот специально для вас...</span>
         </div>
         
         <div class="controls">
-            <button id="tellJokeBtn">Рассказать анекдот</button>
-            <button id="stopBtn" disabled>Остановить</button>
+            <button id="tellJokeBtn">Рассказать ещё анекдот</button>
+            <button id="stopBtn">Остановить</button>
         </div>
         
         <div class="volume-control">
@@ -172,7 +177,7 @@
     </footer>
 
     <script>
-        // База данных "несмешных" анекдотов
+        // База данных "несмешных" анекдотов (увеличенная коллекция)
         const jokes = [
             "Что сказал скелет, когда зашел в бар? — Дайте мне пива и тряпку для костей.",
             "Почему курица перешла дорогу? — Чтобы доказать опоссуму, что это можно сделать.",
@@ -188,7 +193,12 @@
             "Как называется медведь без зубов? — Беззубый медведь.",
             "Почему томат покраснел? — Потому что увидел салат.",
             "Что сказал один лифт другому? — Я тебя насквозь вижу.",
-            "Почему программист всегда холоден? — Потому что он постоянно работает с Windows."
+            "Почему программист всегда холоден? — Потому что он постоянно работает с Windows.",
+            "Как называется ложка для программиста? — Дебаггер.",
+            "Почему стакан воды нервничал? — Потому что его все доставали.",
+            "Что сказал рояль в кустах? — Ничего, он же рояль.",
+            "Почему Excel не мог найти работу? — Потому что у него не было ссылок.",
+            "Как называется кот, который работает в Microsoft? — Windows."
         ];
         
         // Элементы страницы
@@ -196,18 +206,19 @@
         const tellJokeBtn = document.getElementById('tellJokeBtn');
         const stopBtn = document.getElementById('stopBtn');
         const volumeControl = document.getElementById('volume');
-        let currentAudio = null;
+        let currentSpeech = null;
+        let voicesLoaded = false;
         
         // Функция для получения случайного анекдота
         function getRandomJoke() {
             return jokes[Math.floor(Math.random() * jokes.length)];
         }
         
-        // Функция для озвучивания текста (используем Web Speech API)
+        // Функция для озвучивания текста с более реалистичным голосом
         function speakText(text) {
             // Останавливаем предыдущее воспроизведение
-            if (currentAudio) {
-                currentAudio.pause();
+            if (currentSpeech) {
+                window.speechSynthesis.cancel();
             }
             
             // Создаем объект речи
@@ -215,12 +226,19 @@
             speech.text = text;
             speech.lang = 'ru-RU';
             speech.volume = volumeControl.value;
-            speech.rate = 0.9;
-            speech.pitch = 1;
+            speech.rate = 0.9; // Немного медленнее для реалистичности
+            speech.pitch = 0.9; // Немного ниже тон
             
-            // Назначаем голос (если доступен русский)
+            // Выбираем самый реалистичный русский голос
             const voices = window.speechSynthesis.getVoices();
-            const russianVoice = voices.find(voice => voice.lang === 'ru-RU');
+            let russianVoice = voices.find(voice => 
+                voice.lang === 'ru-RU' && voice.name.includes('Google')
+            );
+            
+            if (!russianVoice) {
+                russianVoice = voices.find(voice => voice.lang === 'ru-RU');
+            }
+            
             if (russianVoice) {
                 speech.voice = russianVoice;
             }
@@ -236,9 +254,24 @@
                 stopBtn.disabled = true;
             };
             
+            speech.onerror = (event) => {
+                console.error('Ошибка синтеза речи:', event);
+                tellJokeBtn.disabled = false;
+                stopBtn.disabled = true;
+            };
+            
             // Запускаем речь
             window.speechSynthesis.speak(speech);
-            currentAudio = speech;
+            currentSpeech = speech;
+        }
+        
+        // Функция для запуска первого анекдота
+        function startFirstJoke() {
+            if (!voicesLoaded) return;
+            
+            const joke = getRandomJoke();
+            jokeText.innerHTML = joke;
+            speakText(joke);
         }
         
         // Обработчик кнопки "Рассказать анекдот"
@@ -257,15 +290,12 @@
         
         // Обработчик изменения громкости
         volumeControl.addEventListener('input', () => {
-            if (currentAudio) {
-                currentAudio.volume = volumeControl.value;
+            if (currentSpeech) {
+                window.speechSynthesis.cancel();
+                currentSpeech.volume = volumeControl.value;
+                window.speechSynthesis.speak(currentSpeech);
             }
         });
-        
-        // Инициализация голосов при загрузке
-        window.speechSynthesis.onvoiceschanged = function() {
-            // Голоса загружены
-        };
         
         // Обработчики для кнопок рейтинга
         document.querySelectorAll('.rating button').forEach(button => {
@@ -273,6 +303,26 @@
                 alert(`Спасибо за оценку ${button.textContent}! Мы постараемся стать еще несмешнее!`);
             });
         });
+        
+        // Инициализация голосов при загрузке
+        window.speechSynthesis.onvoiceschanged = function() {
+            voicesLoaded = true;
+            startFirstJoke();
+        };
+        
+        // Остановка речи при закрытии страницы
+        window.addEventListener('beforeunload', () => {
+            window.speechSynthesis.cancel();
+        });
+        
+        // Запуск при полной загрузке страницы
+        window.addEventListener('load', function() {
+            // Если голоса уже загружены (некоторые браузеры)
+            if (speechSynthesis.getVoices().length > 0) {
+                voicesLoaded = true;
+                startFirstJoke();
+            }
+        });
     </script>
 </body>
-  </html>
+</html>
