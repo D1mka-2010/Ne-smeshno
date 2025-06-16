@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Самые несмешные анекдоты</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffebee;
+            color: #333;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #d32f2f;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .bot-container {
+            background-color: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .bot-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .bot-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #ffcdd2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
+        }
+        
+        .bot-title {
+            font-size: 1.5em;
+            color: #d32f2f;
+        }
+        
+        .joke-display {
+            min-height: 100px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #b71c1c;
+        }
+        
+        button:disabled {
+            background-color: #9e9e9e;
+            cursor: not-allowed;
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #757575;
+        }
+        
+        .rating {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .rating button {
+            background-color: #757575;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🤖 Бот-Тролль 🤖</h1>
+        <p>Самые несмешные анекдоты, которые вы когда-либо слышали</p>
+    </header>
+    
+    <div class="bot-container">
+        <div class="bot-header">
+            <div class="bot-avatar">😈</div>
+            <div>
+                <div class="bot-title">Тролль-Анекдотер 3000</div>
+                <div>Готов испортить ваш день плохими шутками</div>
+            </div>
+        </div>
+        
+        <div class="joke-display" id="jokeText">
+            Нажмите кнопку ниже, чтобы услышать ужасный анекдот...
+        </div>
+        
+        <div class="controls">
+            <button id="tellJokeBtn">Рассказать анекдот</button>
+            <button id="stopBtn" disabled>Остановить</button>
+        </div>
+        
+        <div class="volume-control">
+            <label for="volume">Громкость:</label>
+            <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7">
+        </div>
+        
+        <div class="rating">
+            <p>Оцените уровень несмешного:</p>
+            <button>1</button>
+            <button>2</button>
+            <button>3</button>
+            <button>4</button>
+            <button>5</button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Внимание! Создатели сайта не несут ответственности за испорченное настроение, потерю чувства юмора или желание убить бота.</p>
+        <p>© 2023 Несмешные анекдоты Inc.</p>
+    </footer>
+
+    <script>
+        // База данных "несмешных" анекдотов
+        const jokes = [
+            "Что сказал скелет, когда зашел в бар? — Дайте мне пива и тряпку для костей.",
+            "Почему курица перешла дорогу? — Чтобы доказать опоссуму, что это можно сделать.",
+            "Что сказал один программист другому? — Тебе здесь не рады.",
+            "Как назвать ленивую кенгуру? — Пума.",
+            "Почему книга по математике грустила? — Потому что у нее было слишком много проблем.",
+            "Что сказал океан другому океану? — Ничего, они просто помахали.",
+            "Почему фотографу плохо живется? — Потому что он всегда негативен.",
+            "Какой любимый сыр у строителя? — Коттедж.",
+            "Почему велосипед упал? — Потому что он был двухколесный.",
+            "Что сказал 0 числу 8? — Красивые штаны.",
+            "Почему гриб всех приглашает на вечеринку? — Потому что он веселый.",
+            "Как называется медведь без зубов? — Беззубый медведь.",
+            "Почему томат покраснел? — Потому что увидел салат.",
+            "Что сказал один лифт другому? — Я тебя насквозь вижу.",
+            "Почему программист всегда холоден? — Потому что он постоянно работает с Windows."
+        ];
+        
+        // Элементы страницы
+        const jokeText = document.getElementById('jokeText');
+        const tellJokeBtn = document.getElementById('tellJokeBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const volumeControl = document.getElementById('volume');
+        let currentAudio = null;
+        
+        // Функция для получения случайного анекдота
+        function getRandomJoke() {
+            return jokes[Math.floor(Math.random() * jokes.length)];
+        }
+        
+        // Функция для озвучивания текста (используем Web Speech API)
+        function speakText(text) {
+            // Останавливаем предыдущее воспроизведение
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+            
+            // Создаем объект речи
+            const speech = new SpeechSynthesisUtterance();
+            speech.text = text;
+            speech.lang = 'ru-RU';
+            speech.volume = volumeControl.value;
+            speech.rate = 0.9;
+            speech.pitch = 1;
+            
+            // Назначаем голос (если доступен русский)
+            const voices = window.speechSynthesis.getVoices();
+            const russianVoice = voices.find(voice => voice.lang === 'ru-RU');
+            if (russianVoice) {
+                speech.voice = russianVoice;
+            }
+            
+            // Обработчики событий
+            speech.onstart = () => {
+                tellJokeBtn.disabled = true;
+                stopBtn.disabled = false;
+            };
+            
+            speech.onend = () => {
+                tellJokeBtn.disabled = false;
+                stopBtn.disabled = true;
+            };
+            
+            // Запускаем речь
+            window.speechSynthesis.speak(speech);
+            currentAudio = speech;
+        }
+        
+        // Обработчик кнопки "Рассказать анекдот"
+        tellJokeBtn.addEventListener('click', () => {
+            const joke = getRandomJoke();
+            jokeText.textContent = joke;
+            speakText(joke);
+        });
+        
+        // Обработчик кнопки "Остановить"
+        stopBtn.addEventListener('click', () => {
+            window.speechSynthesis.cancel();
+            tellJokeBtn.disabled = false;
+            stopBtn.disabled = true;
+        });
+        
+        // Обработчик изменения громкости
+        volumeControl.addEventListener('input', () => {
+            if (currentAudio) {
+                currentAudio.volume = volumeControl.value;
+            }
+        });
+        
+        // Инициализация голосов при загрузке
+        window.speechSynthesis.onvoiceschanged = function() {
+            // Голоса загружены
+        };
+        
+        // Обработчики для кнопок рейтинга
+        document.querySelectorAll('.rating button').forEach(button => {
+            button.addEventListener('click', () => {
+                alert(`Спасибо за оценку ${button.textContent}! Мы постараемся стать еще несмешнее!`);
+            });
+        });
+    </script>
+</body>
+  </html>
